@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Formulário de Inscrição</title>
+    <style>body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+        text-align: center;
+    }
+    
+    label {
+        display: block;
+        margin: 10px 0 5px;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="file"],
+    input[type="date"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        background-color: #218838;
+    }
+    
+    .total-cost {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+    }</style>
+
+<body>
+    <div class="container">
+        <h1>Formulário de Inscrição</h1>
+        <form method="POST" action="enviar.php" id="uploadForm" enctype="multipart/form-data" netlify>
+            <label for="name">Nome:</label>
+            <input type="text" id="name" required name="nome">
+
+            <label for="cpf">CPF:</label>
+            <input type="text" id="cpf" required name="cpf">
+
+            <label for="dob">Data de Nascimento:</label>
+            <input type="date" id="dob" required name="data_nascimento">
+           
+            <label>Idade:</label>
+            <label><input type="checkbox" id="under5" name="menor" onchange="calcularInscricao()"> Menos de 5 anos</label>
+            <label><input type="checkbox" id="between5and10" name="entre" onchange="calcularInscricao()"> Entre 5 e 10 anos</label>
+            <label><input type="checkbox" id="over10" name="maior" onchange="calcularInscricao()"> Maior que 10 anos</label>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" required name="email">
+
+            <label>Com ou sem camisa:</label>
+            <label><input type="checkbox" id="shirt" name="camisa" onchange="calcularInscricao()"> Camisa (R$ 45)</label>
+
+            <label>Com ou sem transporte:</label>
+            <label><input type="checkbox" id="transport" name="transporte" onchange="calcularInscricao()"> Transporte (R$ 20)</label>
+
+
+
+            <label for="receipt">Anexar comprovante do PIX (PDF):</label>
+            <input type="file" id="pdfFile" accept=".pdf" required name="pdfFile">
+
+            <button type="submit">Enviar</button>
+        </form>
+
+        <div id="totalCost" class="total-cost">Valor Total: R$ 0</div>
+    </div>
+    <div id="message"></div>
+    <script>
+        function calcularInscricao() {
+            // Valores iniciais
+            const valorInscricao = 120;
+            const valorCamisa = 45;
+            const valorTransporte = 20;
+           
+
+            // Obter a taxa de inscrição com base nas checkboxes
+            let taxaInscricao = 0;
+            if (document.getElementById('under5').checked) {
+                taxaInscricao = 0; // Menos de 5 anos não paga
+            } else if (document.getElementById('between5and10').checked) {
+                taxaInscricao = valorInscricao / 2; // Meia inscrição
+            } else if (document.getElementById('over10').checked) {
+                taxaInscricao = valorInscricao; // Inscrição inteira
+            }
+
+            // Calcular o custo total
+            let custoTotal = taxaInscricao;
+            if (document.getElementById('shirt').checked) {
+                custoTotal += valorCamisa;
+            }
+            if (document.getElementById('transport').checked) {
+                custoTotal += valorTransporte;
+            }
+            
+
+            // Exibir o resultado
+            document.getElementById('totalCost').innerText = `Valor Total: R$ ${custoTotal.toFixed(2)}`;
+        }
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Previne o envio padrão do formulário
+
+            const formData = new FormData(this); // Cria um objeto FormData com os dados do formulário
+
+            // Envia o arquivo usando fetch
+            fetch('enviar.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('message').innerText = data; // Exibe a resposta do servidor
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                document.getElementById('message').innerText = 'Erro ao enviar o arquivo.';
+            });
+        });
+    </script>
+</body>
+</html>
